@@ -1,84 +1,93 @@
 /* =======================
-   Base (giữ nguyên của bạn)
+   Base
    ======================= */
-html {
-  font-size: 14px;
-  position: relative;
-  min-height: 100%;
+html{font-size:14px;position:relative;min-height:100%}
+@media (min-width:768px){html{font-size:16px}}
+.btn:focus,.btn:active:focus,.btn-link.nav-link:focus,.form-control:focus,.form-check-input:focus{
+  box-shadow:0 0 0 .1rem white,0 0 0 .25rem #258cfb
 }
-@media (min-width: 768px) { html { font-size: 16px; } }
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-body { margin-bottom: 60px; }
-.form-floating > .form-control-plaintext::placeholder,
-.form-floating > .form-control::placeholder { color: var(--bs-secondary-color); text-align: end; }
-.form-floating > .form-control-plaintext:focus::placeholder,
-.form-floating > .form-control:focus::placeholder { text-align: start; }
-
+body{margin-bottom:60px}
+.form-floating>.form-control-plaintext::placeholder,
+.form-floating>.form-control::placeholder{color:var(--bs-secondary-color);text-align:end}
+.form-floating>.form-control-plaintext:focus::placeholder,
+.form-floating>.form-control:focus::placeholder{text-align:start}
 
 /* =======================
    Trang chuyển chậm (fade)
    ======================= */
-html.is-loading body { opacity: 0; }
-body { opacity: 1; transition: opacity .6s ease; }
-
+html.is-loading body{opacity:0}
+body{opacity:1;transition:opacity 0.6s ease}
+@media (prefers-reduced-motion:reduce){body{transition:none}}
 
 /* =======================
-   Sidenav (COMPACT + CỐ ĐỊNH)
-   - Cố định vị trí theo top/right để không “nhảy” giữa các trang
+   SideNav (CỐ ĐỊNH + HẠ XUỐNG)
    ======================= */
 :root{
-  --sidenav-top: 120px;   /* chỉnh cao/thấp */
-  --sidenav-right: 24px;  /* chỉnh sát mép phải */
+  /* Tăng số này để hạ xuống thêm (vd 240–260px) */
+  --sidenav-top: 220px;
+  --sidenav-right: 24px;
 }
 
-.sidenav{
-  position: fixed;
-  top: var(--sidenav-top);
-  right: var(--sidenav-right);
-  left: auto;
-  transform: none;         /* không dùng translateY, vị trí sẽ cố định */
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+/* Khung bọc (được JS thêm) làm neo cố định ở viewport */
+body > .sidenav-wrap{
+  position: fixed !important;
+  top: 0; right: 0; left: auto; bottom: auto;
+  width: auto; height: 0;
+  z-index: 2147483000 !important;  /* siêu cao để không bị che */
+  pointer-events: none;            /* không bắt click ở khung */
+}
+
+/* CHÍNH .sidenav – luôn bám màn hình, không nhảy giữa trang */
+body > .sidenav-wrap > .sidenav,
+body > .sidenav{ /* fallback nếu không có .sidenav-wrap */
+  position: fixed !important;      /* bám viewport */
+  top: var(--sidenav-top) !important;
+  right: var(--sidenav-right) !important;
+  left: auto !important; bottom: auto !important;
+  transform: none !important; -webkit-transform: none !important;
+
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 10px;
   border-radius: 16px;
   background: rgba(12,16,24,.55);
-  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   box-shadow: 0 8px 24px rgba(0,0,0,.30);
-  z-index: 2147483000;
-  pointer-events: auto;
-}
-.sidenav a{
-  width: 44px;
-  height: 44px;
-  display: grid; place-items: center;
-  border-radius: 12px;
-  text-decoration: none; color: #cbd5e1;
-  background: #0f1522;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-  transition: .25s;
-}
-.sidenav a i{ font-size: 18px; }
-.sidenav a:hover{ transform: translateY(-1px); color: #fff; }
-.sidenav a.active{
-  color: #111827;
-  background: linear-gradient(135deg,#ff9966 0%,#ff5e7b 100%);
-  box-shadow: inset 0 0 0 0 rgba(255,255,255,0);
+  pointer-events: auto;            /* phần này mới bắt click */
 }
 
-/* Nếu nội dung bị đè bởi nav: chừa khoảng bên phải (tùy trang) */
-.main-with-sidenav { margin-right: 84px; margin-left: 0; }
+/* Nút con (a/button/…) */
+.sidenav a,.sidenav button,.sidenav .nav-link,.sidenav .item{
+  width:46px;height:46px;display:grid;place-items:center;
+  border-radius:12px;text-decoration:none;color:#cbd5e1;background:#0f1522;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  transition:transform .25s,color .25s,background .25s,box-shadow .25s;
+  border:0;outline:0;cursor:pointer
+}
+.sidenav a i,.sidenav .nav-link i,.sidenav .item i{font-size:18px}
+.sidenav a:hover,.sidenav button:hover,.sidenav .nav-link:hover,.sidenav .item:hover{
+  transform:translateY(-1px);color:#fff
+}
+.sidenav a.active,.sidenav .nav-link.active,.sidenav .item.active{
+  color:#111827;
+  background:linear-gradient(135deg,#ff9966 0%,#ff5e7b 100%);
+  box-shadow:inset 0 0 0 0 rgba(255,255,255,0)
+}
 
+/* Nếu nội dung bị đè bởi nav: áp class này vào wrapper trang */
+.main-with-sidenav{margin-right:92px}
+
+/* Đảm bảo header/navbar không đè lên */
+.header,.navbar,header[role="banner"]{z-index:1000}
 
 /* =======================
-   Responsive nhỏ hơn
+   Responsive
    ======================= */
-@media (max-width: 640px) {
-  :root{ --sidenav-top: 90px; --sidenav-right: 12px; }
-  .sidenav { gap: 8px; padding: 8px; border-radius: 14px; }
-  .sidenav a { width: 40px; height: 40px; border-radius: 10px; }
-  .sidenav a i { font-size: 16px; }
-  .main-with-sidenav { margin-right: 72px; }
+@media (max-width:640px){
+  :root{--sidenav-top:140px;--sidenav-right:12px}
+  .sidenav{gap:8px;padding:8px;border-radius:14px}
+  .sidenav a,.sidenav button,.sidenav .nav-link,.sidenav .item{
+    width:40px;height:40px;border-radius:10px
+  }
+  .sidenav a i,.sidenav .nav-link i,.sidenav .item i{font-size:16px}
+  .main-with-sidenav{margin-right:72px}
 }

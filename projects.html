@@ -14,6 +14,42 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="./css/portfolio.css" />
   <link rel="stylesheet" href="./css/site.css" />
+
+  <!-- Page-only overrides: thu nhỏ slider & chừa chỗ cho sidenav -->
+  <style>
+    :root{
+      /* khoảng né thanh sidenav (tăng nếu nav to hơn) */
+      --sidenav-safe: 120px;
+      /* mức thu nhỏ & đẩy sang trái của slider để không đụng nav */
+      --projects-scale: .92;          /* .90–.95 tuỳ bạn */
+      --projects-shift-x: -28px;      /* đẩy nhẹ sang trái */
+    }
+
+    /* chừa “vùng an toàn” bên phải cho toàn section Projects */
+    .projects-only .container{ padding-right: var(--sidenav-safe); }
+
+    /* thu nhỏ cụm slider và neo theo cạnh phải để né nav */
+    .proj-hero .right .proj-slider{
+      transform-origin: right center;
+      transform: translateX(var(--projects-shift-x)) scale(var(--projects-scale));
+    }
+
+    /* hạn chế bề ngang để card không văng quá sát nav */
+    .proj-hero .right .proj-viewport{ max-width: min(58vw, 980px); }
+
+    /* —— Responsive —— */
+    @media (min-width:1280px){
+      :root{ --projects-scale: .94; --projects-shift-x: -20px; }
+    }
+    @media (max-width:1024px){
+      :root{ --sidenav-safe: 96px; --projects-scale: .93; --projects-shift-x: -18px; }
+    }
+    @media (max-width:768px){
+      :root{ --sidenav-safe: 16px; --projects-scale: 1; --projects-shift-x: 0px; }
+      .projects-only .container{ padding-right: 16px; }
+      .proj-hero .right .proj-viewport{ max-width: 88vw; }
+    }
+  </style>
 </head>
 <body>
   <div id="fx"><canvas id="nebula"></canvas><canvas id="net"></canvas></div>

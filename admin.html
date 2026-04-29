@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard VIP</title>
+  
+  <!-- Các thư viện làm nên sự xịn xò -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: "Poppins", Arial, sans-serif; }
+    [x-cloak] { display: none !important; }
+    /* Tùy chỉnh thanh cuộn siêu mượt */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-gray-50 flex min-h-screen text-gray-800" x-data="adminApp()" x-init="initApp()">
+
+  <!-- SIDEBAR (Menu trái) -->
+  <div class="flex-shrink-0 h-screen sticky top-0 bg-indigo-900 transition-all duration-300 z-20 shadow-2xl" :class="!toggleMenu ? 'w-64' : 'w-20'">
+    <!-- Nút Toggle Sidebar -->
+    <button type="button" @click="toggleMenu = !toggleMenu" class="absolute top-6 -right-4 z-30 flex items-center justify-center w-8 h-8 border border-indigo-200 rounded-full shadow-sm text-indigo-900 bg-white hover:bg-gray-100 focus:outline-none transition-transform duration-300" :class="toggleMenu ? 'rotate-180' : ''">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+    </button>
+    
+    <div class="flex flex-col flex-grow pt-6 pb-4 h-full">
+      <!-- Brand Logo -->
+      <div class="flex items-center px-4 mb-8" :class="toggleMenu ? 'justify-center' : ''">
+        <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-orange-400 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+          <span class="text-white font-bold text-xl">L</span>
+        </div>
+        <div class="ml-3 transition-opacity duration-300 overflow-hidden whitespace-nowrap" x-show="!toggleMenu">
+          <span class="text-white font-bold text-xl block">Minh Luan</span>
+          <span class="text-indigo-300 text-xs italic block">Dashboard VIP</span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 space-y-2 overflow-y-auto">
+        <!-- Tab: Dự Án -->
+        <a href="#" @click.prevent="currentTab = 'projects'" :class="currentTab === 'projects' ? 'bg-indigo-800 text-white shadow-md' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all">
+          <svg class="flex-shrink-0 h-6 w-6" :class="currentTab === 'projects' ? 'text-pink-400' : 'text-indigo-400 group-hover:text-white'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          <span class="ml-3 whitespace-nowrap transition-opacity" x-show="!toggleMenu">Quản lý Dự Án</span>
+        </a>
+
+        <!-- Tab: Hòm Thư -->
+        <a href="#" @click.prevent="currentTab = 'messages'" :class="currentTab === 'messages' ? 'bg-indigo-800 text-white shadow-md' : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all relative">
+          <svg class="flex-shrink-0 h-6 w-6" :class="currentTab === 'messages' ? 'text-pink-400' : 'text-indigo-400 group-hover:text-white'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="ml-3 whitespace-nowrap transition-opacity" x-show="!toggleMenu">Hòm Thư</span>
+          <!-- Badge Thông báo màu đỏ -->
+          <span x-show="unreadCount > 0" class="absolute right-2 top-3 flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full shadow-sm animate-pulse" x-text="unreadCount" x-transition></span>
+        </a>
+      </nav>
+
+      <!-- Bottom Button -->
+      <div class="px-4 mt-auto border-t border-indigo-800 pt-4">
+        <a href="/index.html" target="_blank" class="flex items-center group">
+          <div class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-800 text-indigo-300 group-hover:text-white group-hover:bg-indigo-700 shadow transition-all">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </div>
+          <div class="ml-3 overflow-hidden whitespace-nowrap" x-show="!toggleMenu">
+            <p class="text-sm font-semibold text-white">Xem Website</p>
+            <p class="text-xs font-medium text-indigo-400 group-hover:text-indigo-300">Mở trong tab mới</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="flex-1 flex flex-col min-w-0 bg-gray-50/50">
+    <main class="flex-1 px-6 py-8 sm:px-10">
+      
+      <!--========================================
+             PHẦN 1: QUẢN LÝ DỰ ÁN
+      =========================================-->
+      <div x-show="currentTab === 'projects'" x-cloak x-transition.opacity.duration.400ms>
+        
+        <!-- Header Page -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Dự án của bạn</h2>
+            <p class="text-gray-500 mt-1 text-sm">Quản lý và cập nhật danh mục portfolio hiển thị trên Web.</p>
+          </div>
+          <button @click="showAddModal = true" class="flex items-center px-5 py-2.5 text-sm font-bold text-white bg-gray-900 rounded-xl shadow-lg shadow-gray-300 hover:bg-indigo-600 hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all focus:outline-none">
+            <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            Tạo dự án mới
+          </button>
+        </div>
+
+        <!-- Bảng Dữ Liệu -->
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full leading-normal">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                  <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hình Ảnh</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thông tin dự án</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Công nghệ</th>
+                  <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <template x-for="p in projects" :key="p.id">
+                  <tr class="hover:bg-gray-50/80 transition-colors group">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <!-- Render Ảnh -->
+                      <template x-if="p.image_url">
+                        <div class="h-16 w-24 rounded-lg bg-cover bg-center border border-gray-200 shadow-sm" :style="`background-image: url('${p.image_url}')`"></div>
+                      </template>
+                      <!-- Render Trống -->
+                      <template x-if="!p.image_url">
+                        <div class="h-16 w-24 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200 border-dashed">
+                          <span class="text-xs text-gray-400 font-medium">Trống</span>
+                        </div>
+                      </template>
+                    </td>
+                    <td class="px-6 py-4">
+                      <p class="text-sm font-bold text-gray-900" x-text="p.title"></p>
+                      <p class="text-xs text-gray-500 mt-1 max-w-xs truncate" x-text="p.description || 'Không có mô tả'"></p>
+                      <div class="mt-2 flex gap-3">
+                        <template x-if="p.github_link">
+                          <a :href="p.github_link" target="_blank" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            GitHub
+                          </a>
+                        </template>
+                        <template x-if="p.live_link">
+                          <a :href="p.live_link" target="_blank" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            Live
+                          </a>
+                        </template>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex flex-wrap gap-1.5 max-w-[200px]">
+                        <template x-for="tech in p.tech_stack">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-200" x-text="tech"></span>
+                        </template>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button @click="deleteProject(p.id)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors focus:outline-none flex items-center justify-center ml-auto">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="projects.length === 0">
+                  <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                    <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                    Chưa có dự án nào. Bấm "Tạo dự án mới" để bắt đầu!
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!--========================================
+             PHẦN 2: HÒM THƯ (MESSAGES)
+      =========================================-->
+      <div x-show="currentTab === 'messages'" x-cloak x-transition.opacity.duration.400ms>
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Hòm thư của bạn</h2>
+            <p class="text-gray-500 mt-1 text-sm">Những lời nhắn gửi từ trang Contact.</p>
+          </div>
+        </div>
+
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full leading-normal">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                  <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người Gửi</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nội Dung</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+                  <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <template x-for="m in messages" :key="m.id">
+                  <tr class="hover:bg-gray-50 transition-colors group" :class="!m.is_read ? 'bg-indigo-50/50' : ''">
+                    <td class="px-6 py-5">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-tr from-pink-500 to-yellow-400 flex items-center justify-center text-white font-bold shadow-sm">
+                          <span x-text="m.name.charAt(0).toUpperCase()"></span>
+                        </div>
+                        <div class="ml-4">
+                          <p class="text-sm font-bold text-gray-900" x-text="m.name"></p>
+                          <a :href="`mailto:${m.email}`" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline" x-text="m.email"></a>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="text-sm text-gray-700 max-w-md whitespace-pre-line leading-relaxed" x-text="m.message"></div>
+                      <div class="text-xs text-gray-400 mt-2 font-medium" x-text="new Date(m.created_at).toLocaleString('vi-VN')"></div>
+                    </td>
+                    <td class="px-6 py-5 whitespace-nowrap">
+                      <template x-if="m.is_read">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
+                          Đã đọc
+                        </span>
+                      </template>
+                      <template x-if="!m.is_read">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                          <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
+                          Chưa đọc
+                        </span>
+                      </template>
+                    </td>
+                    <td class="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                      <div class="flex justify-end gap-2">
+                        <template x-if="!m.is_read">
+                          <button @click="markRead(m.id)" title="Đánh dấu đã đọc" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors focus:outline-none">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                          </button>
+                        </template>
+                        <button @click="deleteMessage(m.id)" title="Xóa thư" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors focus:outline-none">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="messages.length === 0">
+                  <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                    <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    Hòm thư hiện đang trống!
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!--========================================
+         MODAL THÊM DỰ ÁN (POPUP)
+  =========================================-->
+  <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      
+      <!-- Lớp làm mờ (Backdrop) -->
+      <div x-show="showAddModal" x-transition.opacity class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" @click="showAddModal = false"></div>
+
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      
+      <!-- Khung Modal -->
+      <div x-show="showAddModal" x-transition.opacity.duration.300ms.translate-y class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full border border-gray-100">
+        <form @submit.prevent="submitProject">
+          <div class="bg-white px-6 pt-6 pb-4 sm:p-8">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-2xl leading-6 font-bold text-gray-900" id="modal-title">✨ Dự Án Mới</h3>
+              <button type="button" @click="showAddModal = false" class="text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-red-50 rounded-full p-2 transition-colors focus:outline-none">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Tên dự án <span class="text-red-500">*</span></label>
+                <input type="text" x-model="form.title" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm outline-none bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400" placeholder="VD: Website E-commerce">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Mô tả ngắn</label>
+                <textarea x-model="form.description" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm outline-none bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400" placeholder="Nói một chút về dự án này..."></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Công nghệ sử dụng</label>
+                <input type="text" x-model="form.tech_stack" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm outline-none bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400" placeholder="Cách nhau bằng dấu phẩy. VD: React, Node.js, Tailwind">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-1">Link GitHub</label>
+                  <input type="url" x-model="form.github_link" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm outline-none bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400" placeholder="https://github.com/...">
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-1">Link Live Demo</label>
+                  <input type="url" x-model="form.live_link" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm outline-none bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400" placeholder="https://...">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Ảnh Bìa (Tùy chọn)</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 transition-colors bg-gray-50">
+                  <div class="space-y-1 text-center">
+                    <svg class="mx-auto h-12 w-12 text-indigo-300" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="flex text-sm text-gray-600 justify-center mt-2">
+                      <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-bold text-indigo-600 hover:text-indigo-500 focus-within:outline-none px-2 py-1 shadow-sm border border-gray-200">
+                        <span>Chọn tải ảnh lên</span>
+                        <input id="file-upload" name="file-upload" type="file" class="sr-only" accept="image/*" @change="handleFileChange">
+                      </label>
+                    </div>
+                    <p class="text-xs font-medium text-gray-500 mt-2" x-text="fileName || 'PNG, JPG, GIF lên tới 5MB'"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Modal Footer -->
+          <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse border-t border-gray-100 rounded-b-3xl">
+            <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-lg shadow-indigo-200 px-6 py-2.5 bg-indigo-600 text-base font-bold text-white hover:bg-indigo-700 hover:-translate-y-0.5 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-all">
+              Lưu Dự Án
+            </button>
+            <button type="button" @click="showAddModal = false" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-2.5 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+              Hủy
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!--========================================
+         SCRIPT ĐIỀU KHIỂN (ALPINE.JS)
+  =========================================-->
+  <script>
+    function adminApp() {
+      return {
+        toggleMenu: false,
+        currentTab: 'projects',
+        projects: [],
+        messages: [],
+        showAddModal: false,
+        fileObj: null,
+        fileName: '',
+        form: {
+          title: '',
+          description: '',
+          tech_stack: '',
+          github_link: '',
+          live_link: ''
+        },
+
+        // Đếm số thư chưa đọc để hiện Badge đỏ
+        get unreadCount() {
+          return this.messages.filter(m => !m.is_read).length;
+        },
+
+        async initApp() {
+          await this.loadProjects();
+          await this.loadMessages();
+        },
+
+        async loadProjects() {
+          try {
+            const res = await fetch('/api/projects');
+            this.projects = await res.json();
+          } catch(err) { console.error(err); }
+        },
+
+        async loadMessages() {
+          try {
+            const res = await fetch('/api/messages');
+            this.messages = await res.json();
+          } catch(err) { console.error(err); }
+        },
+
+        handleFileChange(e) {
+          const file = e.target.files[0];
+          if(file) {
+            this.fileObj = file;
+            this.fileName = file.name;
+          }
+        },
+
+        async submitProject() {
+          const formData = new FormData();
+          formData.append('title', this.form.title);
+          formData.append('description', this.form.description);
+          formData.append('tech_stack', this.form.tech_stack);
+          formData.append('github_link', this.form.github_link);
+          formData.append('live_link', this.form.live_link);
+          if (this.fileObj) formData.append('image', this.fileObj);
+
+          try {
+            const res = await fetch('/api/projects', { method: 'POST', body: formData });
+            if(res.ok) {
+              // Dùng SweetAlert2 bật Popup xịn
+              Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: 'Dự án đã được đưa lên Website.',
+                timer: 2000,
+                showConfirmButton: false,
+                backdrop: `rgba(0,0,123,0.1)`
+              });
+              this.showAddModal = false;
+              this.resetForm();
+              this.loadProjects();
+            } else {
+              throw new Error('Upload failed');
+            }
+          } catch (err) {
+            Swal.fire('Lỗi!', 'Không thể thêm dự án. Vui lòng kiểm tra lại!', 'error');
+          }
+        },
+
+        resetForm() {
+          this.form = { title: '', description: '', tech_stack: '', github_link: '', live_link: '' };
+          this.fileObj = null;
+          this.fileName = '';
+          document.getElementById('file-upload').value = '';
+        },
+
+        async deleteProject(id) {
+          const result = await Swal.fire({
+            title: 'Bạn chắc chắn muốn xóa?',
+            text: "Dự án này sẽ biến mất khỏi Website của bạn vĩnh viễn!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'Có, Xóa nó!',
+            cancelButtonText: 'Giữ lại'
+          });
+
+          if (result.isConfirmed) {
+            await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+            this.loadProjects();
+            Swal.fire({ icon: 'success', title: 'Đã xóa!', timer: 1500, showConfirmButton: false });
+          }
+        },
+
+        async markRead(id) {
+          await fetch(`/api/messages/${id}/read`, { method: 'PUT' });
+          this.loadMessages();
+        },
+
+        async deleteMessage(id) {
+          const result = await Swal.fire({
+            title: 'Xóa tin nhắn?',
+            text: "Tin nhắn này sẽ bị xóa bỏ vĩnh viễn.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'Đồng ý xóa',
+            cancelButtonText: 'Hủy'
+          });
+
+          if (result.isConfirmed) {
+            await fetch(`/api/messages/${id}`, { method: 'DELETE' });
+            this.loadMessages();
+            Swal.fire({ icon: 'success', title: 'Đã dọn dẹp!', timer: 1500, showConfirmButton: false });
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

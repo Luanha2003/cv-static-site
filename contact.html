@@ -50,17 +50,17 @@
           <div class="grid" style="grid-template-columns:1fr 1fr; gap:14px">
             <div>
               <label class="muted">Your name</label>
-              <input type="text" placeholder="John Doe" />
+              <input type="text" id="contact-name" placeholder="John Doe" required />
             </div>
             <div>
               <label class="muted">Email</label>
-              <input type="email" placeholder="john@email.com" />
+              <input type="email" id="contact-email" placeholder="john@email.com" required />
             </div>
           </div>
 
           <div style="margin-top:14px">
             <label class="muted">Message</label>
-            <textarea placeholder="Tell me a bit about your project..."></textarea>
+            <textarea id="contact-message" placeholder="Tell me a bit about your project..." required></textarea>
           </div>
 
           <button type="submit" class="send-btn"><span>Send message</span></button>

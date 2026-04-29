@@ -86,48 +86,21 @@
       <div class="right">
         <div class="proj-slider" id="proj-slider">
           <div class="proj-viewport">
-            <div class="proj-track">
-              <!-- Slides: dùng đường dẫn tương đối -->
-              <a class="slide" href="https://github.com/Luanha2003" target="_blank" rel="noopener"
-                 style="--bg: url('./img/projects/p1.jpg')">
-                <div class="slide-overlay">
-                  <strong>Movie App UI</strong>
-                  <span>React • TMDB</span>
-                </div>
-              </a>
-              <a class="slide" href="https://github.com/Luanha2003" target="_blank" rel="noopener"
-                 style="--bg: url('./img/projects/p2.jpg')">
-                <div class="slide-overlay">
-                  <strong>Admin Dashboard</strong>
-                  <span>Node.js • Charts</span>
-                </div>
-              </a>
-              <a class="slide" href="https://github.com/Luanha2003" target="_blank" rel="noopener"
-                 style="--bg: url('./img/projects/p3.jpg')">
-                <div class="slide-overlay">
-                  <strong>E-commerce</strong>
-                  <span>NestJS • MongoDB</span>
-                </div>
-              </a>
-              <a class="slide" href="https://github.com/Luanha2003" target="_blank" rel="noopener"
-                 style="--bg: url('./img/projects/p4.jpg')">
-                <div class="slide-overlay">
-                  <strong>Portfolio v2</strong>
-                  <span>Vue • Animations</span>
-                </div>
-              </a>
+            <div class="proj-track" id="proj-track">
+              <!-- Dữ liệu sẽ được render từ API -->
+              <p style="color: white; padding: 20px;">Đang tải dự án...</p>
             </div>
           </div>
 
           <!-- Controls -->
-          <button class="proj-nav proj-prev" aria-label="Previous">
+          <button class="proj-nav proj-prev" aria-label="Previous" id="proj-prev" style="display:none;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <button class="proj-nav proj-next" aria-label="Next">
+          <button class="proj-nav proj-next" aria-label="Next" id="proj-next" style="display:none;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
           </button>
 
-          <div class="proj-indicator" id="proj-indicator">1 / 4</div>
+          <div class="proj-indicator" id="proj-indicator" style="display:none;"></div>
         </div>
       </div>
     </div>
@@ -144,6 +117,78 @@
         a.classList.toggle('active', file === current);
       });
     })();
+
+    // Dynamic Projects Logic
+    document.addEventListener('DOMContentLoaded', async () => {
+      const track = document.getElementById('proj-track');
+      const prevBtn = document.getElementById('proj-prev');
+      const nextBtn = document.getElementById('proj-next');
+      const indicator = document.getElementById('proj-indicator');
+      
+      try {
+        const res = await fetch('http://localhost:3000/api/projects');
+        const projects = await res.json();
+        
+        if (projects.length === 0) {
+          track.innerHTML = '<p style="color:white; padding:20px;">Chưa có dự án nào.</p>';
+          return;
+        }
+
+        track.innerHTML = projects.map(p => {
+          // Xử lý ảnh mặc định nếu không có
+          const bgImg = p.image_url ? `url('${p.image_url}')` : 'linear-gradient(45deg, #1f2235, #2b304c)';
+          const techStr = p.tech_stack && p.tech_stack.length ? p.tech_stack.join(' • ') : 'No stack';
+          const link = p.live_link || p.github_link || '#';
+          
+          return `
+            <a class="slide" href="${link}" target="_blank" rel="noopener" style="--bg: ${bgImg}; background: var(--bg) center/cover no-repeat;">
+              <div class="slide-overlay">
+                <strong>${p.title}</strong>
+                <span>${techStr}</span>
+              </div>
+            </a>
+          `;
+        }).join('');
+
+        // Khởi tạo hiển thị nút điều hướng
+        if (projects.length > 1) {
+          prevBtn.style.display = 'grid';
+          nextBtn.style.display = 'grid';
+          indicator.style.display = 'block';
+        }
+
+        // Logic Slider Cơ Bản (Cuộn theo slide)
+        const slides = track.querySelectorAll('.slide');
+        let currentIndex = 0;
+        
+        function updateSlider() {
+          if(!slides.length) return;
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+          track.style.transition = 'transform 0.4s ease';
+          indicator.textContent = `${currentIndex + 1} / ${slides.length}`;
+        }
+        
+        updateSlider();
+
+        nextBtn.addEventListener('click', () => {
+          if (currentIndex < slides.length - 1) {
+            currentIndex++;
+            updateSlider();
+          }
+        });
+
+        prevBtn.addEventListener('click', () => {
+          if (currentIndex > 0) {
+            currentIndex--;
+            updateSlider();
+          }
+        });
+
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        track.innerHTML = '<p style="color:red; padding:20px;">Lỗi tải dự án. Vui lòng đảm bảo Backend đang chạy.</p>';
+      }
+    });
   </script>
 </body>
 </html>

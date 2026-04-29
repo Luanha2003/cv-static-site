@@ -298,10 +298,40 @@ init();
     }, 2600);
   }
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();                 // chặn gửi thật
-    showToast('Đã gửi tin nhắn thành công'); // đổi chuỗi nếu muốn
-    try { form.reset(); } catch {}
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const nameEl = document.getElementById('contact-name');
+    const emailEl = document.getElementById('contact-email');
+    const msgEl = document.getElementById('contact-message');
+    
+    if(nameEl && emailEl && msgEl) {
+      try {
+        const res = await fetch('http://localhost:3000/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: nameEl.value,
+            email: emailEl.value,
+            message: msgEl.value
+          })
+        });
+        
+        const data = await res.json();
+        if(res.ok) {
+          showToast('✅ Đã gửi tin nhắn thành công!');
+          form.reset();
+        } else {
+          showToast('❌ Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        showToast('❌ Lỗi kết nối Server! Backend đang tắt?');
+      }
+    } else {
+      // Fallback nếu không ở trang contact
+      showToast('Đã gửi tin nhắn (giả lập)');
+      try { form.reset(); } catch {}
+    }
   });
 })();
 
@@ -364,4 +394,77 @@ init();
     const hidden = document.visibilityState !== 'visible';
     document.documentElement.classList.toggle('is-leaving', hidden);
   });
+})();
+
+/* === Tubes Cursor Effect === */
+(async () => {
+  try {
+    const module = await import("https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js");
+    const TubesCursor = module.default;
+
+    // Ép style mạnh để khắc phục triệt để lỗi cắt ngang khi cuộn chuột
+    const style = document.createElement('style');
+    style.innerHTML = `
+      html { background: var(--bg) !important; overflow-y: auto !important; }
+      body { background: transparent !important; overflow-y: auto !important; height: auto !important; }
+      #fx, #tubes-wrapper {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        bottom: auto !important;
+        right: auto !important;
+        transform: none !important;
+        pointer-events: none !important;
+      }
+      #tubes-wrapper {
+        z-index: -1 !important;
+        mix-blend-mode: screen !important;
+        opacity: 0.9 !important;
+      }
+      #tubes-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Tạo wrapper bọc canvas để an toàn tuyệt đối
+    const wrapper = document.createElement('div');
+    wrapper.id = 'tubes-wrapper';
+
+    let canvas = document.createElement('canvas');
+    canvas.id = 'tubes-canvas';
+    wrapper.appendChild(canvas);
+
+    document.body.appendChild(wrapper);
+
+    const app = TubesCursor(canvas, {
+      tubes: {
+        colors: ["#ff6b6b", "#ffcc70", "#6ee7ff"], 
+        lights: {
+          intensity: 200,
+          colors: ["#ff4d4d", "#ffc62b", "#6ee7ff", "#b889f4"]
+        }
+      }
+    });
+
+    document.body.addEventListener('click', () => {
+      const colors = randomColors(3);
+      const lightsColors = randomColors(4);
+      if(app && app.tubes) {
+        app.tubes.setColors(colors);
+        app.tubes.setLightsColors(lightsColors);
+      }
+    });
+
+    function randomColors(count) {
+      return new Array(count).fill(0).map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
+    }
+
+  } catch (e) {
+    console.error("Lỗi load TubesCursor:", e);
+  }
 })();
